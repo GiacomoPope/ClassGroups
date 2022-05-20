@@ -8,7 +8,9 @@ Python implementation of Class Groups of Imaginary Quadratic Fields, where eleme
 
 ## Benchmarks
 
-# Naive
+Some timings of scalar multiplication using different algorithms. Nothng fancy, will eventually swap out with benchmarks
+
+### Naive
 ```
 Created group with 512 bits in 1.7881393432617188e-05 seconds
 Performed a scalar multiplication with 511 bit secret in 0.1533510684967041 seconds
@@ -30,7 +32,7 @@ Performed a scalar multiplication with 2046 bit secret in 3.183690071105957 seco
 --------------------------------------------------
 ```
 
-# NUCOMP / NUDUPL
+### NUCOMP / NUDUPL
 ```
 Created group with 512 bits in 1.71661376953125e-05 seconds
 Performed a scalar multiplication with 511 bit secret in 0.12361025810241699 seconds
