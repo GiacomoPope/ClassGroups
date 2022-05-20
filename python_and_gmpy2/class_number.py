@@ -36,7 +36,8 @@ def euler_product(Cl, b=10):
 
 def baby_steps_giant_step(g,e,B1,C1,Q1):
     baby_steps = {}
-    q = int(ceil(sqrt((B1 - C1)/ 2)))
+    q = int(ceil(sqrt((B1 - C1)/2)))
+    print(f"Baby step bounds: {q, B1, C1}")
     # Baby Steps
     Id = g.parent.identity()
     x1 = e*g
@@ -93,7 +94,7 @@ def class_number(Cl):
     raise ValueError("Group order cannot be found, algorithm failed...")
     return None
 
-p = random_prime(10**10)
+p = random_prime(10**7)
 Cl = ImaginaryClassGroup(-p)
 h = class_number(Cl)
 print(f"h(-{p}) = {h}")
