@@ -32,17 +32,31 @@ class ImaginaryClassGroup:
             return self.element(self, 1, 0)
         return self.element(self, 1, 1)
 
+    def check_prime(self, a):
+        # lazy, so i can do easy sqrt
+        if (a & 3) != 3 and (a & 7) != 5:
+            return False
+        D_mod_a = self.D % a
+        if is_square(D_mod_a, a):
+            return True
+
+    def lift_a(self, a, check=True):
+        D_mod_a = self.D % a
+        if check and not self.check_prime(a):
+            raise ValueError("Supplied prime cannot be lifted")
+        b = mod_sqrt(D_mod_a, a)
+        if self.D % 4 == 0:
+            b = crt([b, 2], [(a, 1), (2, 2)], 4*a)
+        return self.element(self, a, b)            
+
     def random_element(self, upper_bound=None):
         if upper_bound == None:
             upper_bound = abs(self.D)
         while True:
             a = random_prime(upper_bound)
-            D_mod_a = self.D % a
-            # lazy, so i can do easy sqrt
-            if (a & 3) != 3 and (a & 7) != 5:
-                continue
-            if is_square(D_mod_a, a):
+            if self.check_prime(a):
                 break
+        D_mod_a = self.D % a
         b = mod_sqrt(D_mod_a, a)
         if self.D % 4 == 0:
             b = crt([b, 2], [(a, 1), (2, 2)], 4*a)
@@ -326,6 +340,8 @@ class BinaryQuadraticForm:
         return self
 
     def __mul__(self, n):
+        if isinstance(n, mpz):
+            n = int(n)
         if not isinstance(n, int):
             raise TypeError(
                 f"Scalar multiplication must be performed using an integer.")

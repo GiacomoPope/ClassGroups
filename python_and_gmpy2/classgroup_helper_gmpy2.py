@@ -1,4 +1,4 @@
-from gmpy2 import gcd, gcdext, isqrt, is_prime, mpz
+from gmpy2 import gcd, gcdext, isqrt, is_prime, mpz, legendre
 from random import randint
 from functools import reduce
 
@@ -35,24 +35,7 @@ def random_prime(n):
             return x
 
 def is_square(a, p):
-    if (p & 1) == 0:
-        raise Exception('Unsupported division: even modulus')
-    b = p
-    if a == 0:
-        return True
-    ls = 1
-    while a != 0:
-        if (a & 1) == 0:
-            a >>= 1
-            if ((b + 2) & 7) > 4:
-                ls = -ls
-        else:
-            if a < b:
-                a, b = b, a
-                if (a & b & 3) == 3:
-                    ls = -ls
-            a -= b
-    return ls == 1
+    return legendre(a, p) == 1
 
 def mod_sqrt(a, p):
     if (p & 3) == 3:
