@@ -1,43 +1,37 @@
-from math import gcd
+from gmpy2 import gcd, gcdext, isqrt, is_prime, mpz
 from random import randint
 from functools import reduce
 
 def egcd(a, b):
-    if a == 0:
-        return (0, 1, b)
-    else:
-        v, u, d = egcd(b % a, a)
-        return (u - (b // a) * v, v, d)
+    return gcdext(a,b)
 
-def is_prime(n, k):
+def part_eucl(a, b, L):
     """
-    miller rabin primality test
+    Sub algorithm from Cohen p.248
     """
-    if n == 2 or n == 3:
-        return True
-    if n % 2 == 0:
-        return False
-    r, s = 0, n - 1
-    while s % 2 == 0:
-        r += 1
-        s //= 2
-    for _ in range(k):
-        b = randint(2, n-1)
-        x = pow(b, s, n)
-        if x == 1 or x == n - 1:
-            continue
-        for _ in range(r - 1):
-            x = pow(x, 2, n)
-            if x == n - 1:
-                break
-        else:
-            return False
-    return True
+    # [Initialize]
+    v, v2, v3 = 0, 1, b
+    d, z = a, 0
+    # [Euclidean Step]
+    while abs(v3) > L:
+        q, t3 = divmod(d, v3)
+        # ensure 0 <= t3 < |v3|
+        if t3 < 0:
+            q  += 1
+            t3 -= v3
+        t2 = v - q*v2
+        v, d = v2, v3
+        v2, v3 = t2, t3
+        z = z + 1
+    # [Finished]      
+    if z % 2 == 1:
+        v2, v3 = -v2, -v3
+    return z, d, v, v2, v3
 
 def random_prime(n):
     while True:
         x = randint(2, n)
-        if is_prime(x, 40):
+        if is_prime(x):
             return x
 
 def is_square(a, p):

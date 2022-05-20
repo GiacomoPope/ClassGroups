@@ -13,6 +13,8 @@ class ImaginaryClassGroup:
         if d >= -1:
             raise ValueError(f"The discriminant {d} must be smaller than -1")
         self.D = self._discriminant(d)
+        # Used for composition
+        self.L = isqrt(isqrt(abs(self.D // 4)))
 
     def _discriminant(self, d):
         if d % 4 == 1:
@@ -30,9 +32,11 @@ class ImaginaryClassGroup:
             return self.element(self, 1, 0)
         return self.element(self, 1, 1)
 
-    def random_element(self):
+    def random_element(self, upper_bound=None):
+        if upper_bound == None:
+            upper_bound = abs(self.D)
         while True:
-            a = random_prime(abs(self.D))
+            a = random_prime(upper_bound)
             D_mod_a = self.D % a
             # lazy, so i can do easy sqrt
             if (a & 3) != 3 and (a & 7) != 5:
@@ -169,33 +173,145 @@ class BinaryQuadraticForm:
             raise ValueError(
                 "Binary forms are defined over different discriminants")
 
+        return self._compose_naive(other)
+        # if self == other:
+        #     return self._double()
+        # return self._compose(other)
+
+    def _compose(self, other):
+        """
+        NUCOMP from Cohen
+        Alg. 5.4.9
+        """
+        # [Initialise]
+        if self.a < other.a:
+            a1, b1, c1 = other.abc()
+            a2, b2, c2 = self.abc()
+        else:
+            a1, b1, c1 = self.abc()
+            a2, b2, c2 = other.abc()
+        s = (b1 + b2) // 2
+        n = b2 - s
+
+        # [First Euclidean step]
+        d, u, v = egcd(a2,a1)
+        if s % d == 0:
+            A = -u*n
+            d1 = d
+            if d != 1:
+                a1 //= d1
+                a2 //= d1
+                s  //= d1
+        # [Second Euclidean step]
+        else:
+            d1, u1, v1 = egcd(s,d)
+            if d1 > 1:
+                a1 //= d1
+                a2 //= d1
+                s  //= d1
+                d  //= d1
+            # [Initialise reduction]
+            # first reduce ci mod d, then reduce it all
+            _c1, _c2 = c1 % d, c2 % d
+            l = (-u1 * (u*_c1 + v*_c2)) % d
+            A = -u*(n//d) + l*(a1//d)
+        
+        # [Partial Reduction]
+        A = A % a1
+        A1 = a1 - A
+        if A1 < A:
+            A = -A1
+        z, d, v, v2, v3 = part_eucl(a1,A,self.parent.L)
+
+        # [Special Case]
+        if z == 0:
+            Q1 = a2*v3
+            Q2 = Q1 + n
+            f = Q2 // d
+            g = (v3*s + c2) // d
+            a3 = d*a2
+            b3 = 2*Q1 + b2
+            # c3 = v3*f + g*d1
+            return BinaryQuadraticForm(self.parent, a3, b3)
+
+        # [Final Computations]
+        b = (a2*d + n*v) // a1
+        Q1 = b*v3
+        Q2 = Q1 + n
+        f = Q2 // d
+        e = (s*d + c2*v) // a1
+        Q3 = e*v2
+        Q4 = Q3 - s
+        g = Q4 // v
+        if d1 > 1:
+            v2, v = d1*v2, d1*v
+        a3 = d*b + e*v
+        b3 = Q1 + Q2 + d1*(Q3 + Q4)
+        # c3 = v3*f + g*v2
+        return BinaryQuadraticForm(self.parent, a3, b3)
+
+    def _double(self):
+        """
+        NUDUPL from Cohen
+        Alg. 5.4.8
+        """
+        a, b, c = self.abc()
+        d1, u, v = egcd(b, a)
+
+        A, B = a // d1, b // d1
+        C = (-c*u) % A
+        C1 = A - C
+        if C1 < C:
+            C = -C1
+
+        z, d, v, v2, v3 = part_eucl(A,C,self.parent.L)
+        if z == 0:
+            g = (B*v3 + c) // d
+            a2 = d**2
+            b2 = b + 2*d*v3
+            return BinaryQuadraticForm(self.parent, a2, b2)
+
+        e = (c*v + B*d) // A
+        g = (e*v2 - B) // v
+        b2 = e*v2 + v*g
+
+        if d1 > 1:
+            b2, v, v2 = d1*b2, d1*v, d1*v2
+
+        a2 = d**2 + e*v
+        b2 = b2 + 2*d*v3
+        return BinaryQuadraticForm(self.parent, a2, b2)
+
+    def _compose_naive(self, other):
+        """
+        Naive implementation...
+        """
         # Step 1
         if self.a > other.a:
-            a1, b1, c1 = self.a, self.b, self.c
-            a2, b2, c2 = other.a, other.b, other.c
+            a1, b1, c1 = self.abc()
+            a2, b2, c2 = other.abc()
         else:
-            a1, b1, c1 = self.a, self.b, self.c
-            a2, b2, c2 = other.a, other.b, other.c
+            a1, b1, c1 = other.abc()
+            a2, b2, c2 = self.abc()
         s = (b1 + b2) // 2
         n = b2 - s
         # Step 2
         if a2 % a1 == 0:
             y1, d = 0, a1
         else:
-            u, v, d = egcd(a2, a1)
+            d, u, v = egcd(a2, a1)
             y1 = u
         # Step 3
         if s % d == 0:
             x2, y2, d1 = 0, -1, d
         else:
-            u, v, d1 = egcd(s, d)
+            d1, u, v = egcd(s, d)
             x2, y2 = u, -v
         # Step 4
         v1, v2 = a1 // d1, a2 // d1
         r = (y1*y2*n - x2*c2) % v1
         a3 = v1*v2
         b3 = b2 + 2*v2*r
-
         return BinaryQuadraticForm(self.parent, a3, b3)
 
     def __iadd__(self, other):
