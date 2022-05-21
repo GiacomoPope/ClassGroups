@@ -1,27 +1,19 @@
 from classgroup_gmpy2 import *
 from gmpy2 import kronecker, floor, ceil, mpfr, sqrt
-from math import pi
+from math import pi, log
 from sympy import factorint
+from primesieve import primes
 
-def primes_to_n(n):
-    # https://stackoverflow.com/questions/2068372/fastest-way-to-list-all-primes-below-n-in-python/3035188#3035188
-    # Returns  a list of primes < n
-    sieve = [True] * n
-    for i in range(3, int(n ** 0.5) + 1, 2):
-        if sieve[i]:
-            sieve[i * i::2 * i] = [False] * ((n - i * i - 1) // (2 * i) + 1)
-    return [2] + [i for i in range(3, n, 2) if sieve[i]]
-
-def euler_product(Cl, b=10):
+def euler_product(Cl, b=5, p_bound=18):
     fps = []
-    sqrt_D = sqrt(mpfr(abs(Cl.D)))
-    P = max(2**18, sqrt(sqrt_D))
+    sqrt_D = sqrt(abs(Cl.D))
+    P = max(2**p_bound, int(sqrt(sqrt_D)))
     sqrt_P = sqrt(mpfr(P))
 
-    Q = sqrt_D / mpfr(pi)
-    for p in primes_to_n(P):
+    Q = sqrt_D / pi
+    for p in primes(P):
         ls = kronecker(Cl.D, p)
-        Qp = (1 - ls / mpfr(p))
+        Qp = (1 - (ls / p))
         Q /= Qp
         # compute some random elements
         # using small primes while we 
@@ -30,6 +22,7 @@ def euler_product(Cl, b=10):
             if Cl.check_prime(p):
                 fps.append(Cl.lift_a(p, check=False))
 
+    print(f"Euler product: {Q}")
     B = floor(Q*(1 + 1/(2*sqrt_P)))
     C = ceil(Q*(1 - 1/(2*sqrt_P)))
     return mpz(Q), mpz(B), mpz(C), fps
@@ -49,7 +42,7 @@ def baby_steps_giant_step(g,e,B1,C1,Q1):
         baby_steps[x1] = r
         if xr == Id:
             return r
-    # Organise...
+    # Prepare
     y = x1 + xr
     y = 2*y
     z = Q1*x1
@@ -74,8 +67,8 @@ def reduce_element_order(g, e, n):
                 n = n // p
     return n
 
-def class_number(Cl):
-    Q, B, C, fps = euler_product(Cl)
+def class_number(Cl, p_bound=18):
+    Q, B, C, fps = euler_product(Cl, p_bound=p_bound)
     baby_steps = {}
     e = 1 
     B1 = B
@@ -89,18 +82,18 @@ def class_number(Cl):
         if e > (B - C):
             h = e*floor(B / e)
             return int(h)            
-        B1 = floor(B1 / n)
-        C1 = ceil(C1 / n)
+        B1 = mpz(floor(B1 / n))
+        C1 = mpz(ceil(C1 / n))
     raise ValueError("Group order cannot be found, algorithm failed...")
     return None
 
-p = random_prime(10**7)
+p = random_prime(10**9)
 Cl = ImaginaryClassGroup(-p)
-h = class_number(Cl)
+h = class_number(Cl, p_bound=22)
 print(f"h(-{p}) = {h}")
 
 score = 0
-for _ in range(50):
+for _ in range(100):
     if h*Cl.random_element(upper_bound=2**16) == Cl.identity():
         score += 1
 print(f"score: {score}")
