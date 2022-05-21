@@ -41,9 +41,13 @@ def baby_steps_giant_step(g,e,B1,C1,Q1):
         xr = x1 + xr
         baby_steps[x1] = r
         if xr == Id:
+            print("tada!")
             return r
     # Prepare
-    y = x1 + xr
+    if q > 2:
+        y = x1 + xr
+    else:
+        y = q*x1
     y = 2*y
     z = Q1*x1
     n = Q1
@@ -69,11 +73,8 @@ def reduce_element_order(g, e, n):
 
 def class_number(Cl, p_bound=18):
     Q, B, C, fps = euler_product(Cl, p_bound=p_bound)
-    baby_steps = {}
     e = 1 
-    B1 = B
-    C1 = C
-    Q1 = Q
+    B1, C1, Q1 = B, C, Q
 
     for g in fps:
         n = baby_steps_giant_step(g, e, B1, C1, Q1)
@@ -87,12 +88,14 @@ def class_number(Cl, p_bound=18):
     raise ValueError("Group order cannot be found, algorithm failed...")
     return None
 
-p = random_prime(10**9)
+p = random_prime(10**8)
 Cl = ImaginaryClassGroup(-p)
 h = class_number(Cl, p_bound=22)
 print(f"h(-{p}) = {h}")
 
 score = 0
+
+print(f"Testing 100 random elements to see if h*g = Id...")
 for _ in range(100):
     if h*Cl.random_element(upper_bound=2**16) == Cl.identity():
         score += 1
