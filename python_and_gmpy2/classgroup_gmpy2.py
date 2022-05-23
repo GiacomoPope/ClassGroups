@@ -168,29 +168,10 @@ class BinaryQuadraticForm:
     def discriminant(self):
         return self.parent.D
 
-    def __eq__(self, other):
-        if isinstance(other, BinaryQuadraticForm):
-            return all([self.a == other.a, self.b == other.b, self.parent.D == other.parent.D])
-        raise TypeError(
-            f"{other} if of type {type(other)} and should be {type(self)}")
-
-    def __neg__(self):
+    def inverse(self):
         if self.b == 0:
             return self
         return BinaryQuadraticForm(self.parent, self.a, -self.b, self.c)
-
-    def __add__(self, other):
-        if not isinstance(other, BinaryQuadraticForm):
-            raise TypeError(
-                f"{other} if of type {type(other)} and should be {type(self)}")
-        if self.parent.D != other.parent.D:
-            raise ValueError(
-                "Binary forms are defined over different discriminants")
-
-        # return self._compose_naive(other)
-        if self == other:
-            return self._double()
-        return self._compose(other)
 
     def _compose(self, other):
         """
@@ -264,7 +245,7 @@ class BinaryQuadraticForm:
         # c3 = v3*f + g*v2
         return BinaryQuadraticForm(self.parent, a3, b3)
 
-    def _double(self):
+    def _square(self):
         """
         NUDUPL from Cohen
         Alg. 5.4.8
@@ -328,18 +309,37 @@ class BinaryQuadraticForm:
         b3 = b2 + 2*v2*r
         return BinaryQuadraticForm(self.parent, a3, b3)
 
-    def __iadd__(self, other):
-        self = self + other
+    def __eq__(self, other):
+        if isinstance(other, BinaryQuadraticForm):
+            return all([self.a == other.a, self.b == other.b, self.parent.D == other.parent.D])
+        raise TypeError(
+            f"{other} if of type {type(other)} and should be {type(self)}")
+
+    def __mul__(self, other):
+        if not isinstance(other, BinaryQuadraticForm):
+            raise TypeError(
+                f"{other} if of type {type(other)} and should be {type(self)}")
+        if self.parent.D != other.parent.D:
+            raise ValueError(
+                "Binary forms are defined over different discriminants")
+
+        # return self._compose_naive(other)
+        if self == other:
+            return self._square()
+        return self._compose(other)
+
+    def __imul__(self, other):
+        self = self * other
         return self
 
-    def __sub__(self, other):
-        return self + (-other)
+    def __truediv__(self, other):
+        return self * other.inverse()
 
-    def __isub__(self, other):
-        self = self + (-other)
+    def __itruediv__(self, other):
+        self = self * other.inverse()
         return self
 
-    def __mul__(self, n):
+    def __pow__(self, n):
         if isinstance(n, mpz):
             n = int(n)
         if not isinstance(n, int):
@@ -351,16 +351,13 @@ class BinaryQuadraticForm:
         # Deal with negative scalar multiplication
         if n < 0:
             n = -n
-            Q = -Q
+            Q = Q.inverse()
         while n > 0:
             if n % 2 == 1:
-                R = R + Q
-            Q = Q + Q
+                R = R * Q
+            Q = Q * Q
             n = n // 2
         return R
-
-    def __rmul__(self, other):
-        return self * other
 
     def __hash__(self):
         return hash(self._to_tuple())
