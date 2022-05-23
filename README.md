@@ -16,7 +16,7 @@ $$
 \tilde{h} = \left \lfloor {\frac{\sqrt{|D|}}{\pi}} \prod_{p < P} \left(1 - \frac{\left(\frac{D}{p}\right)}{p} \right)^{-1} \right \rfloor
 $$
 
-This is currently implemented as
+(currently implemented as)
 
 ```py
 def euler_product(Cl):
@@ -35,11 +35,11 @@ def euler_product(Cl):
     return mpz(Q), mpz(B), mpz(C)
 ```
 
-We know the class number $h$ within fairly tight bounds. With upper, lower bounds $C < h < B$ we can find $h = \tilde{h} \pm q$ for some $q < (B - C) / 2$. Searching naively for this $x$ would be linear, and we can use Shank's BSGS method to instead search in a space $\sqrt{q}$. This is steps 3-5 in the above algorithm. 
+We know the class number $h$ within fairly tight bounds. With upper, lower bounds $C < h < B$ we can find $h = \tilde{h} \pm q$ for some $q < (B - C) / 2$. Searching naively for this $q$ would be linear, and we can use Shank's BSGS method to instead search in a space $\sqrt{q}$. This is steps 3-5 in the above algorithm. 
 
-However, I cannot find a way to make this work as Cohen has written in. The implementation above seems to work only about 50% of the time. As such, I have modified steps 5 and 6 to account for this and can now comfortably compute class numbers for $10^{30}$.
+However, I cannot find a way to make this work as Cohen has written in. The implementation above seems to work only when an elements order is greater or equal to the Euler product estimate, meaning it fails about 50% of the time. I have modified steps 5 and 6 to account for this and can now comfortably compute class numbers for $10^{30}$, but maybe I am just misunderstanding Cohen's description.
 
-There are additional issues encounted by the non-cyclicity of the class group, meaning even when $n$ is found from the BSGS routine, the resulting value can be incorrect. To fix this, I should instead implement algorithm 5.4.1, which feels like a good **TODO**.
+There are additional issues encounted by the non-cyclicity of the class group, meaning even when $n$ is found from the BSGS routine, the value can be incorrect. To fix this, I should instead implement algorithm 5.4.1, which feels like a good **TODO**.
 
 ![Proper Algorithm 5.4.1](images/bsgs2.png)
 
@@ -92,7 +92,6 @@ Performed a scalar multiplication with 2046 bit secret in 2.0988810062408447 sec
 ```
 
 ### Gmpy2 + NUCOMP / NUDUPL
-
 ```
 Created group with 512 bits in 3.790855407714844e-05 seconds
 Performed a scalar multiplication with 507 bit secret in 0.0359799861907959 seconds
