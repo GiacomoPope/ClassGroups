@@ -8,7 +8,7 @@ Python implementation of Class Groups of Imaginary Quadratic Fields, where eleme
 
 In `class_number.py` we offer a (slighly modified) version of the Heuristic Algorithm 5.4.10 from the third printing of Cohen's "A Course in Computational Number Theory"
 
-![Heuristic Algorithm 5.4.10](bsgs.png)
+![Heuristic Algorithm 5.4.10](images/bsgs.png)
 
 The essence of the algorithm is that by computing the Euler product, 
 
@@ -41,7 +41,7 @@ However, I cannot find a way to make this work as Cohen has written in. The impl
 
 There are additional issues encounted by the non-cyclicity of the class group, meaning even when $n$ is found from the BSGS routine, the resulting value can be incorrect. To fix this, I should instead implement algorithm 5.4.1, which feels like a good **TODO**.
 
-![Proper Algorithm 5.4.1](bsgs2.png)
+![Proper Algorithm 5.4.1](images/bsgs2.png)
 
 ## Benchmarks
 

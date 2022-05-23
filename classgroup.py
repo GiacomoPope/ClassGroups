@@ -1,4 +1,4 @@
-from classgroup_helper_gmpy2 import *
+from classgroup_helper import *
 
 class ImaginaryClassGroup:
     """

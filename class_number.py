@@ -1,4 +1,4 @@
-from classgroup_gmpy2 import *
+from classgroup import *
 from gmpy2 import kronecker, floor, ceil, mpfr, sqrt
 from math import pi, log
 from sympy import factorint
@@ -147,7 +147,7 @@ def class_number(Cl, p_bound=18):
     return None
 
 if __name__ == '__main__':
-    p = random_prime(10**30)
+    p = random_prime(10**12)
     Cl = ImaginaryClassGroup(-p)
     print(f"Computing: h({Cl.D})")
 
