@@ -4,9 +4,15 @@ from math import pi, log
 from sympy import factorint
 from primesieve import primes
 
+"""
+Being lazy here and using imports for finding the
+first n primes (for the Euler product) and for
+facotring (for reducing the computed element order)
+"""
+
 DEBUG = False
 
-def euler_product(Cl, b=5, p_bound=18):
+def euler_product(Cl, b=10, p_bound=18):
     fps = []
     sqrt_D = sqrt(abs(Cl.D))
     P = max(2**p_bound, int(sqrt(sqrt_D)))
@@ -31,8 +37,8 @@ def euler_product(Cl, b=5, p_bound=18):
     return mpz(Q), mpz(B), mpz(C), fps
 
 def baby_steps_giant_step(g,e,B1,C1,Q1):
-    # Set bounds, I increase by 0.5% here
-    # for good luck...
+    # Set bounds, I increase by 0.5% each
+    # side herefor good luck...
     b,c = int(1.005*B1), int(0.995*C1) 
     t = ceil((B1 - C1) / 2)
     q = int(ceil(sqrt(t)))
@@ -86,7 +92,7 @@ def baby_steps_giant_step(g,e,B1,C1,Q1):
     # Compute giant steps
     # We look for s such that
     # h = Q1 ± (2qs + r)
-    
+
     y = xr**2
     z_pos = x**Q1
     z_neg = z_pos.inverse()
@@ -141,12 +147,12 @@ def class_number(Cl, p_bound=18):
     return None
 
 if __name__ == '__main__':
-    p = random_prime(10**25)
+    p = random_prime(10**30)
     Cl = ImaginaryClassGroup(-p)
     print(f"Computing: h({Cl.D})")
 
     h = class_number(Cl)
-    print(f"h(-{p}) = {h}")
+    print(f"h = {h}")
 
     score = 0
     for _ in range(100):

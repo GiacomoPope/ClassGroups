@@ -4,7 +4,44 @@
 
 Python implementation of Class Groups of Imaginary Quadratic Fields, where elements are represented as positive definite binary quadratic forms.
 
+## Computing the Class Number
 
+In `class_number.py` we offer a (slighly modified) version of the Heuristic Algorithm 5.4.10 from the third printing of Cohen's "A Course in Computational Number Theory"
+
+![Heuristic Algorithm 5.4.10](bsgs.png)
+
+The essence of the algorithm is that by computing the Euler product, 
+
+$$
+\tilde{h} = \left \lfloor {\frac{\sqrt{|D|}}{\pi}} \prod_{p < P} \left(1 - \frac{\left(\frac{D}{p}\right)}{p} \right)^{-1} \right \rfloor
+$$
+
+This is currently implemented as
+
+```py
+def euler_product(Cl):
+    sqrt_D = sqrt(abs(Cl.D))
+    P = max(2**18, int(sqrt(sqrt_D)))
+    sqrt_P = sqrt(P)
+
+    Q = sqrt_D / pi
+    for p in primes(P):
+        ls = kronecker(Cl.D, p)
+        Qp = (1 - (ls / p))
+        Q /= Qp
+
+    B = floor(Q*(1 + 1/(2*sqrt_P)))
+    C = ceil(Q*(1 - 1/(2*sqrt_P)))
+    return mpz(Q), mpz(B), mpz(C)
+```
+
+We know the class number $h$ within fairly tight bounds. With upper, lower bounds $C < h < B$ we can find $h = \tilde{h} \pm q$ for some $q < (B - C) / 2$. Searching naively for this $x$ would be linear, and we can use Shank's BSGS method to instead search in a space $\sqrt{q}$. This is steps 3-5 in the above algorithm. 
+
+However, I cannot find a way to make this work as Cohen has written in. The implementation above seems to work only about 50% of the time. As such, I have modified steps 5 and 6 to account for this and can now comfortably compute class numbers for $10^{30}$.
+
+There are additional issues encounted by the non-cyclicity of the class group, meaning even when $n$ is found from the BSGS routine, the resulting value can be incorrect. To fix this, I should instead implement algorithm 5.4.1, which feels like a good **TODO**.
+
+![Proper Algorithm 5.4.1](bsgs2.png)
 
 ## Benchmarks
 
