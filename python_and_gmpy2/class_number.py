@@ -31,22 +31,23 @@ def euler_product(Cl, b=5, p_bound=18):
     return mpz(Q), mpz(B), mpz(C), fps
 
 def baby_steps_giant_step(g,e,B1,C1,Q1):
+    # Set bounds, I increase by 0.5% here
+    # for good luck...
     b,c = int(1.005*B1), int(0.995*C1) 
     t = ceil((B1 - C1) / 2)
     q = int(ceil(sqrt(t)))
     
     if DEBUG: print(f"Baby step bounds: {int(t),b,c}")
 
+    # Baby Steps
     Id = g.parent.identity()
     x, xr = g**e, Id
-
     baby_steps = {}
     for r in range(q):
         baby_steps[xr] = r
         xr *= x
         if xr == Id:
             return r + 1
-
 
     """
     I cannot get Cohen's Giant steps to find a result
@@ -82,6 +83,10 @@ def baby_steps_giant_step(g,e,B1,C1,Q1):
     But this fails about 50% of the time.
     """
 
+    # Compute giant steps
+    # We look for s such that
+    # h = Q1 ± (2qs + r)
+    
     y = xr**2
     z_pos = x**Q1
     z_neg = z_pos.inverse()
@@ -122,8 +127,7 @@ def class_number(Cl, p_bound=18):
     e = 1 
     B1, C1, Q1 = B, C, Q
 
-    # for g in fps:
-    for _ in range(10):
+    for g in fps:
         g = Cl.random_element(upper_bound=2**15)
         n = baby_steps_giant_step(g, e, B1, C1, Q1)
         n = reduce_element_order(g, e, n)
@@ -136,16 +140,17 @@ def class_number(Cl, p_bound=18):
     raise ValueError("Group order cannot be found, algorithm failed...")
     return None
 
-p = random_prime(10**25)
-Cl = ImaginaryClassGroup(-p)
-print(f"Computing: h({Cl.D})")
+if __name__ == '__main__':
+    p = random_prime(10**25)
+    Cl = ImaginaryClassGroup(-p)
+    print(f"Computing: h({Cl.D})")
 
-h = class_number(Cl)
-print(f"h(-{p}) = {h}")
+    h = class_number(Cl)
+    print(f"h(-{p}) = {h}")
 
-score = 0
-for _ in range(100):
-    if Cl.random_element(upper_bound=2**16)**h == Cl.identity():
-        score += 1
-if score != 100:
-    print("Failed...") 
+    score = 0
+    for _ in range(100):
+        if Cl.random_element(upper_bound=2**16)**h == Cl.identity():
+            score += 1
+    if score != 100:
+        print("Failed...") 
