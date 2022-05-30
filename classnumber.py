@@ -98,25 +98,23 @@ def baby_steps_giant_step(g,e,B1,C1,Q1):
     z_neg = z_pos.inverse()
 
     for s in range(q//2 + 1):
+        z_pos_inv = z_pos.inverse()
+        z_neg_inv = z_neg.inverse()
+
         if z_pos in baby_steps:
-            if DEBUG: print("Needed to use z_pos")
-            return  Q1 + 2*s*q - baby_steps[z_pos]
+            n =  Q1 + 2*s*q - baby_steps[z_pos]
         elif z_neg in baby_steps:
-            if DEBUG: print("Needed to use z_neg")
-            return -Q1 + 2*s*q - baby_steps[z_neg]
-        
-        z_pos_inv, z_neg_inv = z_pos.inverse(), z_neg.inverse()
-        
-        if z_pos_inv in baby_steps:
-            if DEBUG: print("Needed to use z_pos_inv")
-            return Q1 + 2*s*q + baby_steps[z_pos_inv]
+            n = -Q1 + 2*s*q - baby_steps[z_neg]
+        elif z_pos_inv in baby_steps:
+            n = Q1 + 2*s*q + baby_steps[z_pos_inv]
         elif z_neg_inv in baby_steps:
-            if DEBUG: print("Needed to use z_neg_inv")
-            return -Q1 + 2*s*q + baby_steps[z_neg_inv]
+            n = -Q1 + 2*s*q + baby_steps[z_neg_inv]
 
         z_pos *= y
         z_neg *= y
 
+
+    return n
     raise ValueError(f"Group order is not within the bound {B1, C1}")
 
 def reduce_element_order(g, e, n):
@@ -147,7 +145,7 @@ def class_number(Cl, p_bound=18):
     return None
 
 if __name__ == '__main__':
-    p = random_prime(10**12)
+    p = random_prime(10**15)
     Cl = ImaginaryClassGroup(-p)
     print(f"Computing: h({Cl.D})")
 

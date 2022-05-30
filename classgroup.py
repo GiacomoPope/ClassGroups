@@ -33,9 +33,6 @@ class ImaginaryClassGroup:
         return self.element(self, 1, 1)
 
     def check_prime(self, a):
-        # lazy, so i can do easy sqrt
-        if (a & 3) != 3 and (a & 7) != 5:
-            return False
         D_mod_a = self.D % a
         if is_square(D_mod_a, a):
             return True

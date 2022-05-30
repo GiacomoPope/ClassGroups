@@ -49,13 +49,60 @@ def mod_sqrt(a, p):
         c = 2*a*b**2
         s = a*b*(c - 1) % p
     else:
-        raise Exception(f'Unsupported square root for this modulus: {p}')
+        return tonelli_shanks(a, p)
     if pow(s,2,p) != a:
-        print(a,s,pow(s,2,p))
         return False
     if (s & 1) == 0:
         s = -s % p
     return s
+
+def tonelli_shanks(a, p):
+    """
+    Alg. 1.5.1 Cohen (page 33)
+    """
+    def reduce_prime(p):
+        q = p - 1
+        e = 0
+        while q % 2 == 0:
+            q //= 2
+            e += 1
+        return q, e
+
+    def find_generator(q, p):
+        while True:
+            n = randint(0, p)
+            if legendre(n, p) == -1:
+                return pow(n, q, p)
+
+    def find_exponent(b):
+        bm, m = b, 1
+        while True:
+            bm = pow(bm, 2, p)
+            if bm == 1:
+                return m
+            m += 1
+
+    # Initialise
+    q, r = reduce_prime(p)
+    y = find_generator(q, p)
+    x = pow(a, (q-1) // 2, p)
+    b = (a*x**2) % p
+    x = (a*x) % p
+
+    #Find and reduce exp
+    while b != 1:
+        m = find_exponent(b) 
+        if m == r:
+            raise ValueError(f'a is not a quadratic residue modulo p: {a, p}')
+
+        t_exp = pow(2, r - m - 1)
+        t = pow(y, t_exp, p)
+        y = pow(t, 2, p)
+        r = m
+        x = (x*t) % p
+        b = (b*y) % p
+
+    return x
 
 def crt(xs, ns_fac, n):
     x = 0
