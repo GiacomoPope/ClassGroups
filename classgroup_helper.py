@@ -1,4 +1,4 @@
-from gmpy2 import gcd, gcdext, isqrt, is_prime, mpz, legendre
+from gmpy2 import gcd, gcdext, isqrt, is_prime, mpz, kronecker
 from random import randint
 from functools import reduce
 
@@ -35,10 +35,12 @@ def random_prime(n):
             return x
 
 def is_square(a, p):
-    return legendre(a, p) == 1
+    return kronecker(a, p) == 1
 
 def mod_sqrt(a, p):
-    if (p & 3) == 3:
+    if p == 2:
+        return a % p
+    elif (p & 3) == 3:
         s = pow(a, (p+1) // 4, p)
     elif (p & 7) == 5:
         # Atkin's formulas:
@@ -49,7 +51,7 @@ def mod_sqrt(a, p):
         c = 2*a*b**2
         s = a*b*(c - 1) % p
     else:
-        return tonelli_shanks(a, p)
+        s = tonelli_shanks(a, p)
     if pow(s,2,p) != a:
         return False
     if (s & 1) == 0:
@@ -71,7 +73,7 @@ def tonelli_shanks(a, p):
     def find_generator(q, p):
         while True:
             n = randint(0, p)
-            if legendre(n, p) == -1:
+            if kronecker(n, p) == -1:
                 return pow(n, q, p)
 
     def find_exponent(b):

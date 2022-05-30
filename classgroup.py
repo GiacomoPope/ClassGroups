@@ -33,6 +33,11 @@ class ImaginaryClassGroup:
         return self.element(self, 1, 1)
 
     def check_prime(self, a):
+        """
+        TODO: Bug! a = 2 doesnt always work....
+        """
+        if a == 2:
+            return False
         D_mod_a = self.D % a
         if is_square(D_mod_a, a):
             return True

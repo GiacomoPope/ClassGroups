@@ -12,10 +12,10 @@ facotring (for reducing the computed element order)
 
 DEBUG = False
 
-def euler_product(Cl, b=10, p_bound=18):
+def euler_product(Cl, b=10, P_bound=18):
     fps = []
     sqrt_D = sqrt(abs(Cl.D))
-    P = max(2**p_bound, int(sqrt(sqrt_D)))
+    P = max(2**P_bound, int(sqrt(sqrt_D)))
     sqrt_P = sqrt(mpfr(P))
 
     Q = sqrt_D / pi
@@ -40,7 +40,7 @@ def baby_steps_giant_step(g,e,B1,C1,Q1):
     # Set bounds, I increase by 0.5% each
     # side herefor good luck...
     b,c = int(1.005*B1), int(0.995*C1) 
-    t = ceil((B1 - C1) / 2)
+    t = ceil((b - c) / 2)
     q = int(ceil(sqrt(t)))
     
     if DEBUG: print(f"Baby step bounds: {int(t),b,c}")
@@ -102,19 +102,17 @@ def baby_steps_giant_step(g,e,B1,C1,Q1):
         z_neg_inv = z_neg.inverse()
 
         if z_pos in baby_steps:
-            n =  Q1 + 2*s*q - baby_steps[z_pos]
+            return  Q1 + 2*s*q - baby_steps[z_pos]
         elif z_neg in baby_steps:
-            n = -Q1 + 2*s*q - baby_steps[z_neg]
+            return -Q1 + 2*s*q - baby_steps[z_neg]
         elif z_pos_inv in baby_steps:
-            n = Q1 + 2*s*q + baby_steps[z_pos_inv]
+            return Q1 + 2*s*q + baby_steps[z_pos_inv]
         elif z_neg_inv in baby_steps:
-            n = -Q1 + 2*s*q + baby_steps[z_neg_inv]
+            return -Q1 + 2*s*q + baby_steps[z_neg_inv]
 
         z_pos *= y
         z_neg *= y
 
-
-    return n
     raise ValueError(f"Group order is not within the bound {B1, C1}")
 
 def reduce_element_order(g, e, n):
@@ -126,8 +124,8 @@ def reduce_element_order(g, e, n):
                 n = n // p
     return n
 
-def class_number(Cl, p_bound=18):
-    Q, B, C, fps = euler_product(Cl, p_bound=p_bound)
+def class_number(Cl):
+    Q, B, C, fps = euler_product(Cl)
     e = 1 
     B1, C1, Q1 = B, C, Q
 
@@ -153,8 +151,9 @@ if __name__ == '__main__':
     print(f"h = {h}")
 
     score = 0
-    for _ in range(100):
-        if Cl.random_element(upper_bound=2**16)**h == Cl.identity():
+    goal = 1000
+    for _ in range(goal):
+        if Cl.random_element(upper_bound=2**8)**h == Cl.identity():
             score += 1
-    if score != 100:
-        print("Failed...") 
+    if score != goal:
+        print(f"Failed... score = {score}") 
